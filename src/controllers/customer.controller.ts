@@ -6,6 +6,7 @@ import {
   Post,
   UsePipes,
 } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import { hash } from 'bcryptjs'
 import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe'
 import { PrismaService } from 'src/prisma/prisma.service'
@@ -21,7 +22,10 @@ type CreateAccountBodySchema = z.infer<typeof createAccountBodySchema>
 
 @Controller('/customer')
 export class CustomerController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService
+    ) {}
 
   @Post()
   @HttpCode(201)
@@ -46,5 +50,11 @@ export class CustomerController {
         password: hashedPassword,
       },
     })
+  }
+
+  @Post("/authenticate")
+  async autenthicate() {
+    const token = this.jwt.sign({sub: 'user-id'})
+    return token
   }
 }
