@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config'
 import { envSchema } from 'env'
 import { AuthModule } from './auth/auth.module'
 import { JwtService } from '@nestjs/jwt'
+import { QuestionsController } from './controllers/questions.controller'
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { JwtService } from '@nestjs/jwt'
     }),
     AuthModule
   ],
-  controllers: [CustomerController],
+  controllers: [CustomerController, QuestionsController],
   providers: [PrismaService],
 })
-export class AppModule {}
+export class AppModule { }
