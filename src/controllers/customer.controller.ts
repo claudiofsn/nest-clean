@@ -37,7 +37,7 @@ export class CustomerController {
     private jwt: JwtService
   ) { }
 
-  @Post()
+  @Post('register')
   @HttpCode(201)
   @UsePipes(new ZodValidationPipe(createAccountBodySchema))
   async create(@Body() { email, name, password }: CreateAccountBodySchema) {
