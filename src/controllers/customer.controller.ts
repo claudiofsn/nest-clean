@@ -30,7 +30,7 @@ const authenticateQuerySchema = z.object({
 
 type AuthenticateQuerySchema = z.infer<typeof authenticateQuerySchema>
 
-@Controller('/customer')
+@Controller('customer')
 export class CustomerController {
   constructor(
     private prisma: PrismaService,
