@@ -6,6 +6,7 @@ import { CurrentUser } from '@/infra/auth/current-user-decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
 import { CreateQuestionUseCase } from '@/domain/forum/application/use-cases/create-question'
 import { FetchRecentQuestionsUseCase } from '@/domain/forum/application/use-cases/fetch-recent-questions'
+import { QuestionPresenter } from '@/infra/presenters/question-presenter'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
@@ -58,10 +59,16 @@ export class QuestionsController {
     @Query('page', queryValidationPipe) page: PageQueryParamSchema,
   ) {
 
-    const questions = await this.fetchRecentQuestionsUseCase.execute({
+    const result = await this.fetchRecentQuestionsUseCase.execute({
       page
     })
 
-    return { questions }
+    if (result.isLeft()) {
+      throw new Error("No questions")
+    }
+
+    const questions = result.value.questions
+
+    return { questions: questions.map(QuestionPresenter.toHTTP) }
   }
 }
