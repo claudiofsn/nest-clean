@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { z } from 'zod'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
+import { CreateQuestionUseCase } from '@/domain/forum/application/use-cases/create-question'
+import { FetchRecentQuestionsUseCase } from '@/domain/forum/application/use-cases/fetch-recent-questions'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
@@ -27,7 +28,10 @@ type PageQueryParamSchema = z.infer<typeof pageQueryParamSchema>
 @Controller('/questions')
 @UseGuards(AuthGuard('jwt'))
 export class QuestionsController {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private createQuestion: CreateQuestionUseCase,
+    private fetchRecentQuestionsUseCase: FetchRecentQuestionsUseCase
+  ) { }
 
   @Post()
   async create(
@@ -38,16 +42,14 @@ export class QuestionsController {
     try {
       const userId = user.sub
 
-      const question = await this.prisma.question.create({
-        data: {
-          authorId: userId,
-          title,
-          content,
-          slug: this.convertToSlug(title),
-        },
+      const question = await this.createQuestion.execute({
+        authorId: userId,
+        title,
+        content,
+        attachmentsIds: []
       })
 
-      return question.id
+      return question;
     } catch (error) { }
   }
 
@@ -55,25 +57,11 @@ export class QuestionsController {
   async fetchRecentQuestions(
     @Query('page', queryValidationPipe) page: PageQueryParamSchema,
   ) {
-    const perPage = 1
 
-    const questions = await this.prisma.question.findMany({
-      take: perPage,
-      skip: (page - 1) * perPage,
-      orderBy: {
-        createdAt: 'desc',
-      },
+    const questions = await this.fetchRecentQuestionsUseCase.execute({
+      page
     })
 
     return { questions }
-  }
-
-  private convertToSlug(title: string) {
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
   }
 }
