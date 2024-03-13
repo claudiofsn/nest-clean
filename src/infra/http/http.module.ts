@@ -1,19 +1,24 @@
 import { Module } from "@nestjs/common";
-import { CustomerController } from "./controllers/customer.controller";
+import { UserController } from "./controllers/user.controller";
 import { QuestionsController } from "./controllers/questions.controller";
 import { DatabaseModule } from "../database/database.module";
 import { CreateQuestionUseCase } from "@/domain/forum/application/use-cases/create-question";
 import { FetchRecentQuestionsUseCase } from "@/domain/forum/application/use-cases/fetch-recent-questions";
+import { RegisterStundentUseCase } from "@/domain/forum/application/use-cases/register-student";
+import { AuthenticateStundentUseCase } from "@/domain/forum/application/use-cases/authenticate-student";
+import { CryptographyModule } from "../cryptography/cryptography.module";
 
 @Module({
-    imports: [DatabaseModule],
+    imports: [DatabaseModule, CryptographyModule],
     controllers: [
-        CustomerController,
+        UserController,
         QuestionsController
     ],
     providers: [
         CreateQuestionUseCase,
-        FetchRecentQuestionsUseCase
+        FetchRecentQuestionsUseCase,
+        RegisterStundentUseCase,
+        AuthenticateStundentUseCase
     ]
 })
 export class HttpModule {

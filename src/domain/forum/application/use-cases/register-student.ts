@@ -31,7 +31,7 @@ export class RegisterStundentUseCase {
         password
     }: RegisterStundentUseCaseRequest): Promise<RegisterStundentUseCaseResponse> {
         const emailInUse = await this.studentsRepository.findByEmail(email);
-
+        console.log(emailInUse)
         if (emailInUse) {
             return left(new StudentAlreadyExistsError(email))
         }
