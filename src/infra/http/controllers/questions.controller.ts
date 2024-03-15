@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
+import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { z } from 'zod'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
@@ -27,7 +26,6 @@ const queryValidationPipe = new ZodValidationPipe(pageQueryParamSchema)
 type PageQueryParamSchema = z.infer<typeof pageQueryParamSchema>
 
 @Controller('/questions')
-@UseGuards(AuthGuard('jwt'))
 export class QuestionsController {
   constructor(
     private createQuestion: CreateQuestionUseCase,
@@ -40,18 +38,19 @@ export class QuestionsController {
     { content, title }: CreateQuestionBodySchema,
     @CurrentUser() user: UserPayload,
   ) {
-    try {
-      const userId = user.sub
+    const result = await this.createQuestion.execute({
+      authorId: user.sub,
+      title,
+      content,
+      attachmentsIds: []
+    })
 
-      const question = await this.createQuestion.execute({
-        authorId: userId,
-        title,
-        content,
-        attachmentsIds: []
-      })
+    if (result.isLeft()) {
+      throw new BadRequestException()
+    }
 
-      return question;
-    } catch (error) { }
+    return result;
+
   }
 
   @Get()
@@ -64,7 +63,7 @@ export class QuestionsController {
     })
 
     if (result.isLeft()) {
-      throw new Error("No questions")
+      throw new BadRequestException()
     }
 
     const questions = result.value.questions

@@ -9,7 +9,10 @@ import { AuthenticateStundentUseCase } from "@/domain/forum/application/use-case
 import { CryptographyModule } from "../cryptography/cryptography.module";
 
 @Module({
-    imports: [DatabaseModule, CryptographyModule],
+    imports: [
+        DatabaseModule,
+        CryptographyModule
+    ],
     controllers: [
         UserController,
         QuestionsController
