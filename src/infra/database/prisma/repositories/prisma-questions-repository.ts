@@ -46,7 +46,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
             take: 20,
             skip: (page - 1) * 20
         })
-        return questions.map(PrismaQuestionMapper.toDomain)
+        return questions.map(PrismaQuestionMapper.toDomain);
     }
 
     async create(question: Question): Promise<void> {
@@ -54,7 +54,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
 
         await this.prisma.question.create({
             data
-        })
+        });
     }
 
     async save(question: Question): Promise<void> {
