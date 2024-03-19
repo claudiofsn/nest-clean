@@ -98,5 +98,38 @@ describe('Customer Controller (e2e)', () => {
         expect.objectContaining({ title: 'New question 1' }),
       ],
     })
+  });
+
+  test('Get Question by Slug', async () => {
+    const user = await prisma.user.create({
+      data: {
+        name: 'John Doe',
+        email: 'jhondoe2@example.com',
+        password: await hash('123456', 8),
+      },
+    })
+
+    const accessToken = jwt.sign({ sub: user.id })
+
+    await prisma.question.create({
+      data: {
+        title: 'Questio 01',
+        content: 'Question content',
+        slug: 'question-01',
+        authorId: user.id,
+      },
+    });
+
+    const response = await request(app.getHttpServer())
+      .get(`/questions/question-01`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send()
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toEqual({
+      question: expect.objectContaining({ title: 'Question 01' })
+    })
+
   })
+
 })

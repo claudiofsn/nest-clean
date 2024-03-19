@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { z } from 'zod'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
@@ -6,6 +6,7 @@ import { UserPayload } from '@/infra/auth/jwt.strategy'
 import { CreateQuestionUseCase } from '@/domain/forum/application/use-cases/create-question'
 import { FetchRecentQuestionsUseCase } from '@/domain/forum/application/use-cases/fetch-recent-questions'
 import { QuestionPresenter } from '@/infra/presenters/question-presenter'
+import { GetQuestionBySlugUseCase } from '@/domain/forum/application/use-cases/get-question-by-slug'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
@@ -29,7 +30,8 @@ type PageQueryParamSchema = z.infer<typeof pageQueryParamSchema>
 export class QuestionsController {
   constructor(
     private createQuestion: CreateQuestionUseCase,
-    private fetchRecentQuestionsUseCase: FetchRecentQuestionsUseCase
+    private fetchRecentQuestionsUseCase: FetchRecentQuestionsUseCase,
+    private getQuestionBySlugUseCase: GetQuestionBySlugUseCase
   ) { }
 
   @Post()
@@ -69,5 +71,18 @@ export class QuestionsController {
     const questions = result.value.questions
 
     return { questions: questions.map(QuestionPresenter.toHTTP) }
+  }
+
+  @Get(':slug')
+  async questionBySlug(@Param('slug') slug: string) {
+    const result = await this.getQuestionBySlugUseCase.execute({
+      slug
+    })
+
+    if (result.isLeft()) {
+      throw new BadRequestException()
+    }
+
+    return { question: QuestionPresenter.toHTTP(result.value.question) }
   }
 }

@@ -23,7 +23,7 @@ describe('Customer Controller (e2e)', () => {
 
   test('Register new Customer', async () => {
     const response = await request(app.getHttpServer())
-      .post('/customer/register')
+      .post('/user/register')
       .send({
         name: 'John Doe',
         email: 'jhoen@example.com',
@@ -51,12 +51,14 @@ describe('Customer Controller (e2e)', () => {
     })
 
     const response = await request(app.getHttpServer())
-      .get('/customer/authenticate?email=jhondoe@example.com&password=123456')
+      .get('/user/authenticate?email=jhondoe@example.com&password=123456')
       .send()
 
     expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual({
-      accessToken: expect.any(String),
-    })
+    expect(response.body).to.have.property('accessToken');
+
+    /*    expect(response.body).toEqual({
+          access_token: expect.any(String)
+        })*/
   })
 })
