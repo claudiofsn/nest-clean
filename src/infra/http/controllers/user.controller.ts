@@ -40,6 +40,7 @@ export class UserController {
 
   @Post('register')
   @HttpCode(201)
+  @Public()
   @UsePipes(new ZodValidationPipe(createAccountBodySchema))
   async create(@Body() { email, name, password }: CreateAccountBodySchema) {
     const result = await this.registerStundentUseCase.execute({

@@ -1,23 +1,35 @@
 import { AppModule } from '@/app.module'
+import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug'
+import { DatabaseModule } from '@/infra/database/database.module'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { INestApplication } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import { hash } from 'bcryptjs'
 import request from 'supertest'
+import { QuestionFactory } from 'test/factories/make-question'
+import { StudentFactory } from 'test/factories/make-student'
 
 describe('Customer Controller (e2e)', () => {
   let app: INestApplication
   let prisma: PrismaService
+  let studentFactory: StudentFactory
+  let questionFactory: QuestionFactory
   let jwt: JwtService
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, DatabaseModule],
+      providers: [
+        StudentFactory,
+        QuestionFactory
+      ]
     }).compile()
 
     app = moduleRef.createNestApplication()
     prisma = moduleRef.get(PrismaService)
+    studentFactory = moduleRef.get(StudentFactory)
+    questionFactory = moduleRef.get(QuestionFactory)
     jwt = moduleRef.get(JwtService)
 
     await app.init()
@@ -53,39 +65,21 @@ describe('Customer Controller (e2e)', () => {
     expect(questionOnDatabase).toBeTruthy()
   })
 
-  test('Get questions', async () => {
-    const user = await prisma.user.create({
-      data: {
-        name: 'John Doe',
-        email: 'jhondoe2@example.com',
-        password: await hash('123456', 8),
-      },
-    })
+  test('Get Recent questions', async () => {
+    const user = await studentFactory.makePrismaStudent()
 
-    const accessToken = jwt.sign({ sub: user.id })
+    const accessToken = jwt.sign({ sub: user.id.toString() })
 
-    await prisma.question.createMany({
-      data: [
-        {
-          title: 'New question 1',
-          content: 'Question content',
-          slug: 'question-01',
-          authorId: user.id,
-        },
-        {
-          title: 'New question 2',
-          content: 'Question content 2',
-          slug: 'question-02',
-          authorId: user.id,
-        },
-        {
-          title: 'New question 3',
-          content: 'Question content 3',
-          slug: 'question-03',
-          authorId: user.id,
-        },
-      ],
-    })
+    await Promise.all([
+      questionFactory.makePrismaQuestion({
+        authorId: user.id,
+        title: 'Question 01',
+      }),
+      questionFactory.makePrismaQuestion({
+        authorId: user.id,
+        title: 'Question 02',
+      }),
+    ])
 
     const response = await request(app.getHttpServer())
       .get('/questions')
@@ -94,42 +88,36 @@ describe('Customer Controller (e2e)', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body).toEqual({
-      questions: [
-        expect.objectContaining({ title: 'New question 1' }),
-      ],
+      questions: expect.arrayContaining([
+        expect.objectContaining({ title: 'Question 01' }),
+        expect.objectContaining({ title: 'Question 02' }),
+      ]),
     })
   });
 
   test('Get Question by Slug', async () => {
-    const user = await prisma.user.create({
-      data: {
-        name: 'John Doe',
-        email: 'jhondoe2@example.com',
-        password: await hash('123456', 8),
-      },
-    })
-
-    const accessToken = jwt.sign({ sub: user.id })
-
-    await prisma.question.create({
-      data: {
-        title: 'Questio 01',
-        content: 'Question content',
-        slug: 'question-01',
-        authorId: user.id,
-      },
+    const user = await studentFactory.makePrismaStudent({
+      name: "Jhon Doe"
     });
 
+    const accessToken = jwt.sign({ sub: user.id.toString() })
+
+    await questionFactory.makePrismaQuestion({
+      authorId: user.id,
+      title: "Question 05",
+      slug: Slug.create('question-05')
+    })
+
     const response = await request(app.getHttpServer())
-      .get(`/questions/question-01`)
+      .get('/questions/question-05')
       .set('Authorization', `Bearer ${accessToken}`)
       .send()
 
+
     expect(response.statusCode).toBe(200)
     expect(response.body).toEqual({
-      question: expect.objectContaining({ title: 'Question 01' })
+      question: expect.objectContaining({ title: 'Question 05' })
     })
-
   })
 
 })

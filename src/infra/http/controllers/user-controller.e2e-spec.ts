@@ -29,7 +29,6 @@ describe('Customer Controller (e2e)', () => {
         email: 'jhoen@example.com',
         password: '123456',
       })
-
     expect(response.statusCode).toBe(201)
 
     const userCreated = await prisma.user.findUnique({
@@ -54,11 +53,10 @@ describe('Customer Controller (e2e)', () => {
       .get('/user/authenticate?email=jhondoe@example.com&password=123456')
       .send()
 
-    expect(response.statusCode).toBe(200)
-    expect(response.body).to.have.property('accessToken');
 
-    /*    expect(response.body).toEqual({
-          access_token: expect.any(String)
-        })*/
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toEqual({
+      accessToken: expect.any(String)
+    });
   })
 })
