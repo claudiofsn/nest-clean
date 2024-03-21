@@ -36,13 +36,7 @@ describe('Customer Controller (e2e)', () => {
   })
 
   test('Create a question', async () => {
-    const user = await prisma.user.create({
-      data: {
-        name: 'John Doe',
-        email: 'jhondoe@example.com',
-        password: await hash('123456', 8),
-      },
-    })
+    const user = await studentFactory.makePrismaStudent()
 
     const accessToken = jwt.sign({ sub: user.id })
 
@@ -65,7 +59,7 @@ describe('Customer Controller (e2e)', () => {
     expect(questionOnDatabase).toBeTruthy()
   })
 
-  test('Get Recent questions', async () => {
+  test('Fetch Recent questions', async () => {
     const user = await studentFactory.makePrismaStudent()
 
     const accessToken = jwt.sign({ sub: user.id.toString() })
