@@ -1,5 +1,5 @@
-import { Entity } from '@/core/entities/entity'
-import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { Entity } from '@/core/entities/entity';
+import { UniqueEntityID } from '@/core/entities/unique-entity-id';
 
 export interface StudentProps {
   name: string;
@@ -9,20 +9,20 @@ export interface StudentProps {
 
 export class Student extends Entity<StudentProps> {
   get name() {
-    return this.props.name
+    return this.props.name;
   }
 
   get email() {
-    return this.props.email
+    return this.props.email;
   }
 
   get password() {
-    return this.props.password
+    return this.props.password;
   }
 
   static create(props: StudentProps, id?: UniqueEntityID) {
-    const student = new Student(props, id)
+    const student = new Student(props, id);
 
-    return student
+    return student;
   }
 }

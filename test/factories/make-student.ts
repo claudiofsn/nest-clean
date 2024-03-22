@@ -1,42 +1,42 @@
-import { faker } from '@faker-js/faker'
+import { faker } from '@faker-js/faker';
 
-import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id';
 import {
-    Student,
-    StudentProps,
-} from '@/domain/forum/enterprise/entities/student'
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
-import { PrismaStudentMapper } from '@/infra/database/prisma/mappers/prisma-student-mapper'
+  Student,
+  StudentProps,
+} from '@/domain/forum/enterprise/entities/student';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@/infra/database/prisma/prisma.service';
+import { PrismaStudentMapper } from '@/infra/database/prisma/mappers/prisma-student-mapper';
 
 export function makeStudent(
-    override: Partial<StudentProps> = {},
-    id?: UniqueEntityID,
+  override: Partial<StudentProps> = {},
+  id?: UniqueEntityID,
 ) {
-    const student = Student.create(
-        {
-            name: faker.person.fullName(),
-            email: faker.internet.email(),
-            password: faker.internet.password(),
-            ...override,
-        },
-        id,
-    )
+  const student = Student.create(
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      ...override,
+    },
+    id,
+  );
 
-    return student
+  return student;
 }
 
 @Injectable()
 export class StudentFactory {
-    constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-    async makePrismaStudent(data: Partial<StudentProps> = {}): Promise<Student> {
-        const student = makeStudent(data)
+  async makePrismaStudent(data: Partial<StudentProps> = {}): Promise<Student> {
+    const student = makeStudent(data);
 
-        await this.prisma.user.create({
-            data: PrismaStudentMapper.toPrisma(student),
-        })
+    await this.prisma.user.create({
+      data: PrismaStudentMapper.toPrisma(student),
+    });
 
-        return student
-    }
+    return student;
+  }
 }
