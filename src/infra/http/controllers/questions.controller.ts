@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -18,6 +19,7 @@ import { FetchRecentQuestionsUseCase } from '@/domain/forum/application/use-case
 import { QuestionPresenter } from '@/infra/presenters/question-presenter';
 import { GetQuestionBySlugUseCase } from '@/domain/forum/application/use-cases/get-question-by-slug';
 import { EditQuestionUseCase } from '@/domain/forum/application/use-cases/edit-question';
+import { DeleteQuestionUseCase } from '@/domain/forum/application/use-cases/delete-question';
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
@@ -55,6 +57,7 @@ export class QuestionsController {
     private fetchRecentQuestionsUseCase: FetchRecentQuestionsUseCase,
     private getQuestionBySlugUseCase: GetQuestionBySlugUseCase,
     private editQuestionUseCase: EditQuestionUseCase,
+    private deleteQuestionUseCase: DeleteQuestionUseCase
   ) {}
 
   @Post()
@@ -127,6 +130,24 @@ export class QuestionsController {
 
     if (result.isLeft()) {
       throw new BadRequestException();
+    }
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async deleteQuestion(
+    @CurrentUser() user: UserPayload,
+    @Param('id') questionId: string,
+  ) {
+    const userId = user.sub
+
+    const result = await this.deleteQuestionUseCase.execute({
+      questionId,
+      authorId: userId,
+    })
+
+    if (result.isLeft()) {
+      throw new BadRequestException()
     }
   }
 }
