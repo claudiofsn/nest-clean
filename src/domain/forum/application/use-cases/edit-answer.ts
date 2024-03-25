@@ -7,6 +7,7 @@ import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachmen
 import { UniqueEntityID } from '@/core/entities/unique-entity-id';
 import { AnswerAttachmentsRepository } from '@/domain/forum/application/repositories/answer-attachments-repository';
 import { AnswerAttachment } from '../../enterprise/entities/answer-attachment';
+import { Injectable } from '@nestjs/common';
 
 interface EditAnswerUseCaseRequest {
   authorId: string;
@@ -22,11 +23,12 @@ type EditAnswerUseCaseResponse = Either<
   }
 >;
 
+@Injectable()
 export class EditAnswerUseCase {
   constructor(
     private answersRepository: AnswersRepository,
     private answerAttachmentsRepository: AnswerAttachmentsRepository,
-  ) {}
+  ) { }
 
   async execute({
     authorId,
@@ -44,23 +46,23 @@ export class EditAnswerUseCase {
       return left(new NotAllowedError());
     }
 
-    const currentAnswerAttachments =
-      await this.answerAttachmentsRepository.findManyByAnswerId(answerId);
+    if (attachmentsIds.length > 0) {
+      const currentAnswerAttachments = await this.answerAttachmentsRepository.findManyByAnswerId(answerId);
 
-    const answerAttachmentList = new AnswerAttachmentList(
-      currentAnswerAttachments,
-    );
+      const answerAttachmentList = new AnswerAttachmentList(currentAnswerAttachments);
 
-    const answerAttachments = attachmentsIds.map((attachmentId) => {
-      return AnswerAttachment.create({
-        attachmentId: new UniqueEntityID(attachmentId),
-        answerId: answer.id,
+      const answerAttachments = attachmentsIds.map((attachmentId) => {
+        return AnswerAttachment.create({
+          attachmentId: new UniqueEntityID(attachmentId),
+          answerId: answer.id,
+        });
       });
-    });
 
-    answerAttachmentList.update(answerAttachments);
+      answerAttachmentList.update(answerAttachments);
+      answer.attachments = answerAttachmentList;
 
-    answer.attachments = answerAttachmentList;
+    }
+
     answer.content = content;
 
     await this.answersRepository.save(answer);
