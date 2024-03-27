@@ -14,10 +14,14 @@ import { AnswerQuestionController } from './controllers/answers-question.control
 import { AnswerQuestionUseCase } from '@/domain/forum/application/use-cases/answer-question';
 import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-answer';
 import { DeleteAnswerUseCase } from '@/domain/forum/application/use-cases/delete-answer';
+import { FetchQuestionAnswersUseCase } from '@/domain/forum/application/use-cases/fetch-question-answers';
+import { ChooseQuestionBestAnswerUseCase } from '@/domain/forum/application/use-cases/choose-question-best-answer';
+import { CommentsController } from './controllers/comments.controller';
+import { CommentOnAnswerUseCase } from '@/domain/forum/application/use-cases/comment-on-answer';
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
-  controllers: [UserController, QuestionsController, AnswerQuestionController],
+  controllers: [UserController, QuestionsController, AnswerQuestionController, CommentsController],
   providers: [
     CreateQuestionUseCase,
     FetchRecentQuestionsUseCase,
@@ -28,7 +32,10 @@ import { DeleteAnswerUseCase } from '@/domain/forum/application/use-cases/delete
     DeleteQuestionUseCase,
     AnswerQuestionUseCase,
     EditAnswerUseCase,
-    DeleteAnswerUseCase
+    DeleteAnswerUseCase,
+    FetchQuestionAnswersUseCase,
+    ChooseQuestionBestAnswerUseCase,
+    CommentOnAnswerUseCase
   ],
 })
 export class HttpModule { }

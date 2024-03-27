@@ -28,7 +28,7 @@ export class EditAnswerUseCase {
   constructor(
     private answersRepository: AnswersRepository,
     private answerAttachmentsRepository: AnswerAttachmentsRepository,
-  ) { }
+  ) {}
 
   async execute({
     authorId,
@@ -47,9 +47,12 @@ export class EditAnswerUseCase {
     }
 
     if (attachmentsIds.length > 0) {
-      const currentAnswerAttachments = await this.answerAttachmentsRepository.findManyByAnswerId(answerId);
+      const currentAnswerAttachments =
+        await this.answerAttachmentsRepository.findManyByAnswerId(answerId);
 
-      const answerAttachmentList = new AnswerAttachmentList(currentAnswerAttachments);
+      const answerAttachmentList = new AnswerAttachmentList(
+        currentAnswerAttachments,
+      );
 
       const answerAttachments = attachmentsIds.map((attachmentId) => {
         return AnswerAttachment.create({
@@ -60,7 +63,6 @@ export class EditAnswerUseCase {
 
       answerAttachmentList.update(answerAttachments);
       answer.attachments = answerAttachmentList;
-
     }
 
     answer.content = content;

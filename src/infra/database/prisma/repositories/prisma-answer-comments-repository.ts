@@ -7,9 +7,8 @@ import { PrismaAnswerCommentMapper } from '../mappers/prisma-answer-comment-mapp
 
 @Injectable()
 export class PrismaAnswerCommentsRepository
-  implements AnswerCommentsRepository
-{
-  constructor(private readonly prisma: PrismaService) {}
+  implements AnswerCommentsRepository {
+  constructor(private readonly prisma: PrismaService) { }
 
   async findById(id: string): Promise<AnswerComment | null> {
     const answerComment = await this.prisma.comment.findUnique({
@@ -43,11 +42,15 @@ export class PrismaAnswerCommentsRepository
   }
 
   async create(answerComment: AnswerComment): Promise<void> {
-    const data = PrismaAnswerCommentMapper.toPrisma(answerComment);
+    try {
+      const data = PrismaAnswerCommentMapper.toPrisma(answerComment);
 
-    await this.prisma.comment.create({
-      data,
-    });
+      await this.prisma.comment.create({
+        data,
+      });
+    } catch (error) {
+      throw error
+    }
   }
 
   async delete(answerComment: AnswerComment): Promise<void> {
