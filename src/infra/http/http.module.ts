@@ -16,12 +16,11 @@ import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-ans
 import { DeleteAnswerUseCase } from '@/domain/forum/application/use-cases/delete-answer';
 import { FetchQuestionAnswersUseCase } from '@/domain/forum/application/use-cases/fetch-question-answers';
 import { ChooseQuestionBestAnswerUseCase } from '@/domain/forum/application/use-cases/choose-question-best-answer';
-import { CommentsController } from './controllers/comments.controller';
 import { CommentOnAnswerUseCase } from '@/domain/forum/application/use-cases/comment-on-answer';
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
-  controllers: [UserController, QuestionsController, AnswerQuestionController, CommentsController],
+  controllers: [UserController, QuestionsController, AnswerQuestionController],
   providers: [
     CreateQuestionUseCase,
     FetchRecentQuestionsUseCase,

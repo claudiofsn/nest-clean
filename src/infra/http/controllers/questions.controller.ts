@@ -24,6 +24,7 @@ import { DeleteQuestionUseCase } from '@/domain/forum/application/use-cases/dele
 import { FetchQuestionAnswersUseCase } from '@/domain/forum/application/use-cases/fetch-question-answers'
 import { AnswerPresenter } from '@/infra/presenters/answer.presenter'
 import { ChooseQuestionBestAnswerUseCase } from '@/domain/forum/application/use-cases/choose-question-best-answer'
+import { AnswerQuestionUseCase } from '@/domain/forum/application/use-cases/answer-question'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
@@ -54,6 +55,14 @@ const editQuestionBodyValidationPipe = new ZodValidationPipe(
 
 type EditQuestionBodySchema = z.infer<typeof editQuestionBodySchema>
 
+const answerQuestionBodySchema = z.object({
+  content: z.string()
+})
+
+const bodyValidationPipe = new ZodValidationPipe(answerQuestionBodySchema)
+
+type AnswerQuestionBodySchema = z.infer<typeof answerQuestionBodySchema>
+
 @Controller('/questions')
 export class QuestionsController {
   constructor(
@@ -63,7 +72,8 @@ export class QuestionsController {
     private editQuestionUseCase: EditQuestionUseCase,
     private deleteQuestionUseCase: DeleteQuestionUseCase,
     private fetchQuestionAnswersUseCase: FetchQuestionAnswersUseCase,
-    private chooseQuestionBestAnswerUseCase: ChooseQuestionBestAnswerUseCase
+    private chooseQuestionBestAnswerUseCase: ChooseQuestionBestAnswerUseCase,
+    private answerQuestionUseCase: AnswerQuestionUseCase
   ) { }
 
   @Post()
@@ -192,5 +202,27 @@ export class QuestionsController {
     if (result.isLeft()) {
       throw new BadRequestException()
     }
+  }
+
+  @Post(':questionId/answers')
+  async answerQuestion(
+    @Body(bodyValidationPipe) body: AnswerQuestionBodySchema,
+    @CurrentUser() user: UserPayload,
+    @Param('questionId') questionId: string,
+  ) {
+    const { content } = body
+    const userId = user.sub
+
+    const result = await this.answerQuestionUseCase.execute({
+      content,
+      questionId,
+      authorId: userId,
+      attachmentsIds: [],
+    })
+
+    if (result.isLeft()) {
+      throw new BadRequestException()
+    }
+
   }
 }

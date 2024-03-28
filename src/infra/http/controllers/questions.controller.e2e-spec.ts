@@ -238,4 +238,33 @@ describe('Customer Controller (e2e)', () => {
 
     expect(questionOnDatabase?.bestAnswerId).toEqual(answerId)
   })
+
+  test('[POST] /questions/:questionId/answers', async () => {
+    const user = await studentFactory.makePrismaStudent()
+
+    const accessToken = jwt.sign({ sub: user.id.toString() })
+
+    const question = await questionFactory.makePrismaQuestion({
+      authorId: user.id,
+    })
+
+    const questionId = question.id.toString()
+
+    const response = await request(app.getHttpServer())
+      .post(`/questions/${questionId}/answers`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        content: 'New answer',
+      })
+
+    expect(response.statusCode).toBe(201)
+
+    const answerOnDatabase = await prisma.answer.findFirst({
+      where: {
+        content: 'New answer',
+      },
+    })
+
+    expect(answerOnDatabase).toBeTruthy()
+  })
 });

@@ -38,7 +38,7 @@ export class UserController {
   constructor(
     private registerStundentUseCase: RegisterStundentUseCase,
     private authenticateStundentUseCase: AuthenticateStundentUseCase,
-  ) {}
+  ) { }
 
   @Post('register')
   @HttpCode(201)

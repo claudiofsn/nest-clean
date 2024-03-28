@@ -33,7 +33,7 @@ describe('Answer Questions (E2E)', () => {
     await app.init();
   });
 
-  test('[POST] /questions/:questionId/answers', async () => {
+  test('Responder perguntas [POST] /questions/:questionId/answers', async () => {
     const user = await studentFactory.makePrismaStudent();
 
     const accessToken = jwt.sign({ sub: user.id.toString() });
@@ -51,7 +51,7 @@ describe('Answer Questions (E2E)', () => {
         content: 'New answer',
       });
 
-    expect(response.statusCode).toBe(204);
+    expect(response.statusCode).toBe(201);
 
     const answerOnDatabase = await prisma.answer.findFirst({
       where: {
